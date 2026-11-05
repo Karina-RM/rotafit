@@ -1,0 +1,9 @@
+# Arquivos gerados localmente pelo Supabase CLI e pelo Studio (não versionar)
+.branches
+.temp
+snippets/
+
+# Segredos locais do CLI
+.env.keys
+.env.local
+.env.*.local

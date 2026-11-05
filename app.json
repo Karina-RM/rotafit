@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "RotaFit",
+    "slug": "rotafit",
+    "scheme": "rotafit",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "O RotaFit usa sua localização para registrar a rota e o ritmo da corrida."
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.karinarm.rotafit",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "O RotaFit usa sua localização para registrar a rota da corrida."
+      }
+    },
+    "android": {
+      "package": "com.karinarm.rotafit",
+      "adaptiveIcon": {
+        "backgroundColor": "#B81104",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
