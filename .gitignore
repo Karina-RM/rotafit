@@ -47,3 +47,7 @@ yarn-error.*
 
 # Evidências locais do relatório (capturas com e-mails pessoais; ficam fora do repositório público)
 docs/evidencias/
+
+# Configuracoes locais de ferramentas de IA e relatorios academicos
+.claude/
+/docs/
