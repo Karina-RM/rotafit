@@ -50,4 +50,6 @@ docs/evidencias/
 
 # Configuracoes locais de ferramentas de IA e relatorios academicos
 .claude/
-/docs/
+/docs/relatorio*
+/docs/Relatorio*
+/docs/E19-diagnostico.md
