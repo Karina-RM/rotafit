@@ -1,6 +1,6 @@
 import * as Location from 'expo-location';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import { averagePaceSecPerKm, simplifyRoute } from '@/utils/geo';
+import { averagePaceSecPerKm, haversineMeters, simplifyRoute } from '@/utils/geo';
 import { elapsedSeconds, initialTrackerState, trackerReducer } from '@/utils/tracker';
 import type { SaveRunInput } from '@/types';
 
@@ -12,6 +12,8 @@ export function useRunTracker() {
   const [now, setNow] = useState(() => Date.now());
   const [permissionDenied, setPermissionDenied] = useState(false);
   const subscription = useRef<Location.LocationSubscription | null>(null);
+  // Apenas para diagnóstico: não participa da lógica que valida pontos de GPS.
+  const previousRawLocation = useRef<Location.LocationObject | null>(null);
 
   useEffect(() => {
     if (state.status !== 'active') return undefined;
@@ -27,6 +29,7 @@ export function useRunTracker() {
   useEffect(() => stopWatching, [stopWatching]);
 
   const startWatching = useCallback(async () => {
+    previousRawLocation.current = null;
     const sub = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.BestForNavigation,
@@ -34,6 +37,30 @@ export function useRunTracker() {
         distanceInterval: 5,
       },
       (loc) => {
+        // Diagnóstico E19: registra distâncias e incerteza, nunca coordenadas.
+        // O algoritmo de aceitação permanece exclusivamente no trackerReducer.
+        const previous = previousRawLocation.current;
+        if (__DEV__) {
+          const stepMeters = previous
+            ? haversineMeters(
+                {
+                  lat: previous.coords.latitude,
+                  lng: previous.coords.longitude,
+                  t: previous.timestamp,
+                },
+                { lat: loc.coords.latitude, lng: loc.coords.longitude, t: loc.timestamp },
+              )
+            : null;
+          console.log('[GPS_RAW]', {
+            accuracyM: loc.coords.accuracy?.toFixed(1) ?? null,
+            speedMps: loc.coords.speed?.toFixed(2) ?? null,
+            stepM: stepMeters?.toFixed(1) ?? null,
+            intervalS: previous
+              ? ((loc.timestamp - previous.timestamp) / 1000).toFixed(1)
+              : null,
+          });
+        }
+        previousRawLocation.current = loc;
         dispatch({
           type: 'ADD_POINT',
           now: loc.timestamp,
@@ -93,6 +120,16 @@ export function useRunTracker() {
     stopWatching();
     dispatch({ type: 'RESET' });
   }, [stopWatching]);
+
+  // Registra somente pontos efetivamente aceitos, para comparação com GPS_RAW.
+  useEffect(() => {
+    if (__DEV__ && state.route.length > 0) {
+      console.log('[GPS_ACEITO]', {
+        pontos: state.route.length,
+        distanciaTotalM: Number(state.distanceMeters.toFixed(1)),
+      });
+    }
+  }, [state.route, state.distanceMeters]);
 
   const seconds = elapsedSeconds(state, now);
 
